@@ -187,7 +187,7 @@ for(int i=0; i<n; i++ ) {
 zapis.close();
 }
 
-void Graf::koloruj_graf() {
+void Graf::koloruj_graf(int start_v) {
     //alokujemy potrzebne struktury
     lista* p;
     int* tab_colors = new int[n]; 
@@ -195,22 +195,23 @@ void Graf::koloruj_graf() {
     int max = 0;
 
     for(int i=1; i<this->n; i++ ) {
-      tab_colors[i] = -1;                           // -1 == brak koloru
+      tab_colors[i] = -1;                               // -1 == brak koloru
     }
 
-    tab_colors[0] = 1;                              // pierwszy wierzcholek 0 -> kolor 1
-    for(int v=1; v<n; v++ ) {
-      for(int i = 0; i < n; i++ ) {                 // zerujemy kolory sasiadow
-          C[i] = false;
-      }
-      for( p=listy_sasiedztwa[v]; p; p=p->next ) {  // przegladamy sasiadow
-        if( tab_colors[p->value] > -1 ) {           // jezeli sasiad ma przypisany kolor
-            C[tab_colors[p->value]] = true;         // kolor nr 'u' zaznaczamy jako zajęty
+    tab_colors[start_v] = 1;                            // pierwszy wierzcholek 0 -> kolor 1
+    for(int v=0; v<n; v++ ) {
+        if (v>0) continue;                              // pomijamy kolor zadeklarowany wcześniej
+        for(int i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
+            C[i] = false;
         }
-      }
-      for(int i = 1; i<=n; i++ ) {                  // szukamy wolnego koloru
+        for( p=listy_sasiedztwa[v]; p; p=p->next ) {    // przegladamy sasiadow
+            if( tab_colors[p->value] > -1 ) {           // jezeli sasiad ma przypisany kolor
+                C[tab_colors[p->value]] = true;         // kolor nr 'u' zaznaczamy jako zajęty
+            }
+        }
+        for(int i = 1; i<=n; i++ ) {                    // szukamy wolnego koloru
             if (C[i] == false) {
-                tab_colors[v] = i;                  // Kolorujemy wierzchołek v
+                tab_colors[v] = i;                      // Kolorujemy wierzchołek v
                 break;
             }
         }

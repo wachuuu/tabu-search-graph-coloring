@@ -17,7 +17,7 @@ int main() {
             std::cin >> n >> proc;            // n - wierzcholki, m - krawedzi, proc - gestosc grafu
 
             Graf graf(n, proc);
-            graf.koloruj_graf();
+            graf.koloruj_graf(0);
             break;
         }
         case 2: { //odczyt z pliku
@@ -26,7 +26,10 @@ int main() {
             std::cin >> plik;
 
             Graf graf(plik);
-            graf.koloruj_graf();
+            int start_v;
+            while(true){
+                std::cin >> start_v;
+            graf.koloruj_graf(start_v);}
             break;
         }
         default: {

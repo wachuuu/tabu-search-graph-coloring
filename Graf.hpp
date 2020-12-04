@@ -44,6 +44,6 @@ Graf(std::string plik);
 ~Graf();
 
 //algorytm zachlanny kolorowanie grafu
-void koloruj_graf();
+void koloruj_graf(int start_v);
 };
 #endif
