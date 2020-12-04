@@ -17,10 +17,7 @@ struct lista {
 class Graf {
 private:
 bool *visited = NULL;
-int n;      //liczba wierzcholkow
-int m;      //liczba krawedzi
 int proc;   //procent zageszczenia grafu
-lista **listy_sasiedztwa;
 
 //dodaj wierzcholek
 void dodaj(int val1, int val2);
@@ -37,6 +34,13 @@ void sprawdz_spojnosc();
 void zapisz_instancje(std::string plik);
 
 public:
+int n;              //liczba wierzcholkow
+int m;              //liczba krawedzi
+int* tab_colors;    //kolory wiercholkow grafu
+//struktura danych do przechowywania grafu
+lista **listy_sasiedztwa;
+
+Graf();
 //konstruktor generujacy instancje
 Graf(int n, int proc);
 //konstruktor wczytujacy instancje
@@ -44,6 +48,6 @@ Graf(std::string plik);
 ~Graf();
 
 //algorytm zachlanny kolorowanie grafu
-void koloruj_graf(int start_v);
+int koloruj_graf(int start_v);
 };
 #endif

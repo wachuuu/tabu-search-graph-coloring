@@ -1,5 +1,7 @@
 #include "Graf.hpp"
 
+Graf::Graf(){}
+
 Graf::Graf(int n, int proc) {
     srand(time(NULL));
 
@@ -187,7 +189,7 @@ for(int i=0; i<n; i++ ) {
 zapis.close();
 }
 
-void Graf::koloruj_graf(int start_v) {
+int Graf::koloruj_graf(int start_v) {
     //alokujemy potrzebne struktury
     lista* p;
     int* tab_colors = new int[n]; 
@@ -200,7 +202,7 @@ void Graf::koloruj_graf(int start_v) {
 
     tab_colors[start_v] = 1;                            // pierwszy wierzcholek 0 -> kolor 1
     for(int v=0; v<n; v++ ) {
-        if (v>0) continue;                              // pomijamy kolor zadeklarowany wcześniej
+        if (tab_colors[v]>0) continue;                              // pomijamy kolor zadeklarowany wcześniej
         for(int i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
             C[i] = false;
         }
@@ -227,6 +229,6 @@ void Graf::koloruj_graf(int start_v) {
     std::cout << std::endl;
     std::cout << "Liczba kolorow: " << max << std::endl;
 
-    delete [ ] tab_colors;
     delete [ ] C;
+    return max;
 }

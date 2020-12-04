@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Graf.hpp"
+#include "TabuSearch.hpp"
 
 int main() {
     std::cout << "Wybierz opcje wpisujac 1 lub 2:" << std::endl; 
@@ -26,10 +27,8 @@ int main() {
             std::cin >> plik;
 
             Graf graf(plik);
-            int start_v;
-            while(true){
-                std::cin >> start_v;
-            graf.koloruj_graf(start_v);}
+            TabuSearch solution(graf);
+
             break;
         }
         default: {
