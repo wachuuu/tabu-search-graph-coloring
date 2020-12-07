@@ -36,7 +36,7 @@ void zapisz_instancje(std::string plik);
 public:
 int n;              //liczba wierzcholkow
 int m;              //liczba krawedzi
-int* tab_colors;    //kolory wiercholkow grafu
+int** tab_colors;    //kolory wiercholkow grafu
 //struktura danych do przechowywania grafu
 lista **listy_sasiedztwa;
 

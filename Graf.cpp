@@ -192,28 +192,33 @@ zapis.close();
 int Graf::koloruj_graf(int start_v) {
     //alokujemy potrzebne struktury
     lista* p;
-    int* tab_colors = new int[n]; 
+    int** tab_colors = new int*[n];
+    int k = 2;
+    for(int i=0; i<n; i++) {
+        tab_colors[i] = new int[k];
+        tab_colors[i][0] = i+1;
+    }
     bool* C  = new bool[n];  
     int max = 0;
 
     for(int i=1; i<this->n; i++ ) {
-      tab_colors[i] = -1;                               // -1 == brak koloru
+      tab_colors[i][1] = -1;                               // -1 == brak koloru
     }
 
-    tab_colors[start_v] = 1;                            // pierwszy wierzcholek 0 -> kolor 1
+    tab_colors[start_v][1] = 1;                            // pierwszy wierzcholek 0 -> kolor 1
     for(int v=0; v<n; v++ ) {
-        if (tab_colors[v]>0) continue;                              // pomijamy kolor zadeklarowany wcześniej
+        if (tab_colors[v][1] > 0) continue;                              // pomijamy kolor zadeklarowany wcześniej
         for(int i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
             C[i] = false;
         }
         for( p=listy_sasiedztwa[v]; p; p=p->next ) {    // przegladamy sasiadow
-            if( tab_colors[p->value] > -1 ) {           // jezeli sasiad ma przypisany kolor
-                C[tab_colors[p->value]] = true;         // kolor nr 'u' zaznaczamy jako zajęty
+            if( tab_colors[p->value][1] > -1 ) {           // jezeli sasiad ma przypisany kolor
+                C[tab_colors[p->value][1]] = true;         // kolor nr 'u' zaznaczamy jako zajęty
             }
         }
         for(int i = 1; i<=n; i++ ) {                    // szukamy wolnego koloru
             if (C[i] == false) {
-                tab_colors[v] = i;                      // Kolorujemy wierzchołek v
+                tab_colors[v][1] = i;                      // Kolorujemy wierzchołek v
                 break;
             }
         }
@@ -222,8 +227,8 @@ int Graf::koloruj_graf(int start_v) {
     //wypisujemy wyniki
     std::cout << std::endl;
     for(int v = 0; v < n; v++ ) {
-        std::cout << v+1 << " ma kolor: " << tab_colors[v] << std::endl;
-        if (tab_colors[v] > max) max=tab_colors[v];
+        std::cout << v+1 << " ma kolor: " << tab_colors[v][1] << std::endl;
+        if (tab_colors[v][1] > max) max=tab_colors[v][1];
     }
 
     std::cout << std::endl;
