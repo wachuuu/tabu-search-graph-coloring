@@ -2,13 +2,14 @@
 #define TabuSearch_hpp
 
 #include <iostream>
+#include <algorithm>
 #include "Graf.hpp"
 
 class TabuSearch{
 private:
-int *tabu_list;         //lista tabu
-int **tab_colors;        //wynikowa lista kolorów (zrobilbym kolekcje)
-int color_count;        //na ile kolorow pokolorowalismy graf
+std::vector<int> tabu_list; //lista tabu
+int **tab_colors;           //wynikowa lista kolorów
+int color_count;            //na ile kolorow pokolorowalismy graf
 
 public:
 //wlasciwy algorytm Tabu Search

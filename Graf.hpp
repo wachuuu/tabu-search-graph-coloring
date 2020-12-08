@@ -6,6 +6,7 @@
 #include <random>
 #include <time.h>
 #include <Windows.h>
+#include <vector>
 
 
 //struktura listy jednokierunkowej
@@ -36,7 +37,7 @@ void zapisz_instancje(std::string plik);
 public:
 int n;              //liczba wierzcholkow
 int m;              //liczba krawedzi
-int** tab_colors;    //kolory wiercholkow grafu
+std::vector<std::vector<int>> tab_colors;    //kolory wiercholkow grafu
 //struktura danych do przechowywania grafu
 lista **listy_sasiedztwa;
 
@@ -48,6 +49,8 @@ Graf(std::string plik);
 ~Graf();
 
 //algorytm zachlanny kolorowanie grafu
-int koloruj_graf(int start_v);
+int koloruj_graf(int start_v, std::vector<int> tabu);
+
+int tabu_search();
 };
 #endif

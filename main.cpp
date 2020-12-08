@@ -18,7 +18,7 @@ int main() {
             std::cin >> n >> proc;            // n - wierzcholki, m - krawedzi, proc - gestosc grafu
 
             Graf graf(n, proc);
-            graf.koloruj_graf(0);
+            graf.tabu_search();
             break;
         }
         case 2: { //odczyt z pliku
@@ -27,7 +27,7 @@ int main() {
             std::cin >> plik;
 
             Graf graf(plik);
-            TabuSearch solution(graf);
+            graf.tabu_search();
 
             break;
         }

@@ -62,6 +62,8 @@ Graf::Graf(std::string plik) {
 Graf::~Graf() {
     lista* p, *r;   //wskazniki pomocnicze
     //usuwanie podlist
+
+    //dodac usuwanie tab_colors
     for(int i = 0; i < n; i++ ) {
         p = listy_sasiedztwa [i];
         while(p) {
@@ -189,23 +191,26 @@ for(int i=0; i<n; i++ ) {
 zapis.close();
 }
 
-int Graf::koloruj_graf(int start_v) {
+int Graf::koloruj_graf(int start_v, std::vector<int> tabu) {
+
     //alokujemy potrzebne struktury
     lista* p;
-    int** tab_colors = new int*[n];
-    int k = 2;
-    for(int i=0; i<n; i++) {
-        tab_colors[i] = new int[k];
-        tab_colors[i][0] = i+1;
-    }
+
     bool* C  = new bool[n];  
     int max = 0;
 
-    for(int i=1; i<this->n; i++ ) {
-      tab_colors[i][1] = -1;                               // -1 == brak koloru
+    for(int i=0; i<this->n; i++ ) {
+        tab_colors.push_back({i+1,-1});
     }
 
-    tab_colors[start_v][1] = 1;                            // pierwszy wierzcholek 0 -> kolor 1
+    //uwzglednianie listy tabu
+    for (auto v: tabu) {
+        tab_colors[v][1] = 1;
+    }
+    tab_colors[start_v][1] = 1;     //pierwszy wierzcholek start_v -> kolor 1
+
+
+
     for(int v=0; v<n; v++ ) {
         if (tab_colors[v][1] > 0) continue;                              // pomijamy kolor zadeklarowany wcześniej
         for(int i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
@@ -236,4 +241,108 @@ int Graf::koloruj_graf(int start_v) {
 
     delete [ ] C;
     return max;
+}
+
+int Graf::tabu_search() {
+    //alokacja potrzebnych struktur
+    std::vector <int> tabu_list;        // wierzcholki zapisane na sztywno z kolorem 1
+    std::vector <int> candidates;       //kandydaci na nastepne wierzcholki do poprawy
+    int ITER = 10;                      //liczba iteracji pętli
+    std::vector <int> temp;                          //do sortowania
+    int curr_colors, next_colors;       //najlepsza obecna l. kolorow oraz l. kolorow kandydata
+    int candidate;
+    bool improvement, incident;                   //czy znaleziono mozliwa poprawe
+    /*
+    - przydaloby sie zamienic tab_colors na tablice dwuwymiarowa
+      klucz = nr wierzcholka, wartosc = kolor
+    - algorytm kolorowania grafu przeniósłbym do klasy TabuSearch
+    - zmienilbym tablice tab_colors na kolekcje klucz-wartosc i zrobil ją jako 
+    pole tej klasy
+    */
+
+    //generowanie początkowego rozwiązania v_0 -> 1
+    curr_colors = koloruj_graf(0, tabu_list);
+    std::cout << "poczatkowe rozwiazanie " << curr_colors << std::endl;
+
+    while (ITER > 0) { //petla przeszukiwań
+        //poczatkowe wartosci zmiennych
+        candidates.clear();
+        improvement = false;
+        incident = false;
+
+        //sortowanie kandydatów po kolorach
+        for (int i=0; i<n; i++) {
+            for (int j=i+1; j<n; j++) {
+                if (tab_colors[i][1] > tab_colors[j][1]) {
+                    temp = tab_colors[i];
+                    tab_colors[i] = tab_colors[j];
+                    tab_colors[j] = temp;
+                }
+            }
+        }
+
+        //aktualizacja stosu potencjalnych ruchów
+        for (int i=0; i<n; i++) {
+            candidates.push_back(tab_colors[i][0]-1);
+        }
+        std::cout << "kandydaci ";
+        for(auto v: candidates) {
+            std::cout << " " << v;
+        }
+        std::cout << std::endl;
+
+        //testowanie rozwiazan kandydatow
+        while (!candidates.empty()) {
+            candidate = candidates.back();
+            candidates.pop_back();
+
+            //pomijamy wierzcholki incydentne z tymi w tabu lub te ktore juz sa w tabu
+            //aby uniknac konfliktow
+            for(auto v: tabu_list) {
+                if (istnieje(v,candidate) || v == candidate) {
+                    std::cout << "konflikt " << v << " " << candidate << std::endl;
+                    incident = true;
+                    break;
+                }
+            }
+            //pomijamy tego kandydata
+            if(!incident) { 
+
+                next_colors = koloruj_graf(candidate, tabu_list);
+
+                //funkcja kosztu
+                if(next_colors < curr_colors) {
+                    curr_colors = next_colors;
+                    tabu_list.push_back(candidate);
+                    std::cout << "tabu list ";
+                    for(auto v: tabu_list) {
+                        std::cout << " " << v;
+                    }
+                    std::cout << std::endl;
+                    improvement = true;
+                    break;
+                }
+            }
+        }
+
+        //czy znaleziono lepsze rozwiazanie? jesli nie - otrzymalismy nasze optimum
+        if (!improvement) break;
+
+            /*
+            TO DO
+            V 1. posortuj wierzcholki po kolorach i zapisz je w kolejce candidates
+            V 2. wybierz kandydata i pokoloruj zachlannie ustawiajac kolor kandydata na 1
+            3. jezeli ilosc kolorow sie zmiejszyla zapisz kandydata z kolorem 1 w tabu_list
+                - ponownie posortuj nowe pokolorowanie grafu i zaktualizuj liste kandydatow
+                - w nastepnych krokach uwzgledniaj tabu_list przy kolorowaniu zachlannym
+                - w nastepnych krokach przy doborze kandydata sprawdz czy nie jest incydentny z 
+                  ktoryms wierzcholkiem w tabu_list, jezeli nie -> wroc do kroku 2.
+            4. jezeli ilosc kolorow sie nie zmniejszyla usuwamy kandydata z kolejki i testujemy kolejnego
+            5. w przypadku gdy kolejka zrobi sie pusta - nie ma wiecej mozliwosci obecne pokolorowanie jest 
+            najoptymalniejsze dla tego algorytmu; zakoncz program
+            */
+        
+        ITER--;
+    }
+    return curr_colors;
 }
