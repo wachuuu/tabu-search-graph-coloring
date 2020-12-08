@@ -15,7 +15,7 @@ int main() {
         case 1: { //generowanie instancji
             int n, proc;
             std::cout << "Podaj liczbe wierzcholkow i procent zageszczenia grafu <0,100>:" << std::endl;
-            std::cin >> n >> proc;            // n - wierzcholki, m - krawedzi, proc - gestosc grafu
+            std::cin >> n >> proc;            // n - wierzcholki, proc - gestosc grafu
 
             Graf graf(n, proc);
             graf.tabu_search();

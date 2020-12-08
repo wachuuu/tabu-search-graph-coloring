@@ -40,7 +40,7 @@ Graf::Graf(std::string plik) {
     std::ifstream odczyt;
     int val1, val2; //krawedzie grafu
     odczyt.open(plik);
-    odczyt >> n >> m;
+    odczyt >> n;
 
     //tworzenie struktury danych
     listy_sasiedztwa = new lista* [n]; // tworzymy liste list
@@ -49,7 +49,7 @@ Graf::Graf(std::string plik) {
         listy_sasiedztwa[i] = NULL;
     }
 
-    for (int i = 0; i < m; i++)
+    while (!odczyt.eof())
     {
         odczyt >> val1 >> val2;
         //std::cout << val1 << " " << val2 << std::endl;
@@ -180,7 +180,7 @@ for(int i=0; i<n; i++ ) {
    sortuj(&listy_sasiedztwa[i]);
 }
 // wpisywanie
-zapis << n << " " << m << std::endl;
+zapis << n << std::endl;
 for(int i=0; i<n; i++ ) {
     for( p = listy_sasiedztwa[i]; p; p = p->next ) {
         if (i < p->value) {
@@ -192,14 +192,12 @@ zapis.close();
 }
 
 int Graf::koloruj_graf(int start_v, std::vector<int> tabu) {
-
     //alokujemy potrzebne struktury
     lista* p;
-
     bool* C  = new bool[n];  
-    int max = 0;
+    int i, v, max = 0;
 
-    for(int i=0; i<this->n; i++ ) {
+    for(i = 0; i < this->n; i++ ) {
         tab_colors.push_back({i+1,-1});
     }
 
@@ -209,19 +207,17 @@ int Graf::koloruj_graf(int start_v, std::vector<int> tabu) {
     }
     tab_colors[start_v][1] = 1;     //pierwszy wierzcholek start_v -> kolor 1
 
-
-
-    for(int v=0; v<n; v++ ) {
+    for(v = 0; v < n; v++ ) {
         if (tab_colors[v][1] > 0) continue;                              // pomijamy kolor zadeklarowany wcześniej
-        for(int i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
+        for(i = 0; i < n; i++ ) {                   // zerujemy kolory sasiadow
             C[i] = false;
         }
-        for( p=listy_sasiedztwa[v]; p; p=p->next ) {    // przegladamy sasiadow
-            if( tab_colors[p->value][1] > -1 ) {           // jezeli sasiad ma przypisany kolor
+        for(p = listy_sasiedztwa[v]; p; p = p->next) {    // przegladamy sasiadow
+            if(tab_colors[p->value][1] > -1) {           // jezeli sasiad ma przypisany kolor
                 C[tab_colors[p->value][1]] = true;         // kolor nr 'u' zaznaczamy jako zajęty
             }
         }
-        for(int i = 1; i<=n; i++ ) {                    // szukamy wolnego koloru
+        for(i = 1; i <= n; i++) {                    // szukamy wolnego koloru
             if (C[i] == false) {
                 tab_colors[v][1] = i;                      // Kolorujemy wierzchołek v
                 break;
@@ -231,13 +227,11 @@ int Graf::koloruj_graf(int start_v, std::vector<int> tabu) {
 
     //wypisujemy wyniki
     std::cout << std::endl;
-    for(int v = 0; v < n; v++ ) {
+    for(v = 0; v < n; v++) {
         std::cout << v+1 << " ma kolor: " << tab_colors[v][1] << std::endl;
         if (tab_colors[v][1] > max) max=tab_colors[v][1];
     }
-
-    std::cout << std::endl;
-    std::cout << "Liczba kolorow: " << max << std::endl;
+    std::cout << std::endl << "Liczba kolorow: " << max << std::endl;
 
     delete [ ] C;
     return max;
@@ -248,6 +242,7 @@ int Graf::tabu_search() {
     std::vector <int> tabu_list;        // wierzcholki zapisane na sztywno z kolorem 1
     std::vector <int> candidates;       //kandydaci na nastepne wierzcholki do poprawy
     int ITER = 10;                      //liczba iteracji pętli
+    int i, j;
     std::vector <int> temp;                          //do sortowania
     int curr_colors, next_colors;       //najlepsza obecna l. kolorow oraz l. kolorow kandydata
     int candidate;
@@ -271,8 +266,8 @@ int Graf::tabu_search() {
         incident = false;
 
         //sortowanie kandydatów po kolorach
-        for (int i=0; i<n; i++) {
-            for (int j=i+1; j<n; j++) {
+        for (i = 0; i < n; i++) {
+            for (j = i+1; j < n; j++) {
                 if (tab_colors[i][1] > tab_colors[j][1]) {
                     temp = tab_colors[i];
                     tab_colors[i] = tab_colors[j];
@@ -282,12 +277,12 @@ int Graf::tabu_search() {
         }
 
         //aktualizacja stosu potencjalnych ruchów
-        for (int i=0; i<n; i++) {
+        for (i = 0; i < n; i++) {
             candidates.push_back(tab_colors[i][0]-1);
         }
         std::cout << "kandydaci ";
         for(auto v: candidates) {
-            std::cout << " " << v;
+            std::cout << " " << v+1;
         }
         std::cout << std::endl;
 
@@ -300,14 +295,13 @@ int Graf::tabu_search() {
             //aby uniknac konfliktow
             for(auto v: tabu_list) {
                 if (istnieje(v,candidate) || v == candidate) {
-                    std::cout << "konflikt " << v << " " << candidate << std::endl;
+                    std::cout << "konflikt " << v+1 << " " << candidate+1 << std::endl;
                     incident = true;
                     break;
                 }
             }
             //pomijamy tego kandydata
             if(!incident) { 
-
                 next_colors = koloruj_graf(candidate, tabu_list);
 
                 //funkcja kosztu
@@ -316,7 +310,7 @@ int Graf::tabu_search() {
                     tabu_list.push_back(candidate);
                     std::cout << "tabu list ";
                     for(auto v: tabu_list) {
-                        std::cout << " " << v;
+                        std::cout << " " << v+1;
                     }
                     std::cout << std::endl;
                     improvement = true;
