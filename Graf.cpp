@@ -197,6 +197,7 @@ int Graf::koloruj_graf(int start_v, std::vector<int> tabu) {
     bool* C  = new bool[n];  
     int i, v, max = 0;
 
+    tab_colors.clear();
     for(i = 0; i < this->n; i++ ) {
         tab_colors.push_back({i+1,-1});
     }
@@ -241,12 +242,13 @@ int Graf::tabu_search() {
     //alokacja potrzebnych struktur
     std::vector <int> tabu_list;        // wierzcholki zapisane na sztywno z kolorem 1
     std::vector <int> candidates;       //kandydaci na nastepne wierzcholki do poprawy
-    int ITER = 10;                      //liczba iteracji pętli
+    int ITER = 100;                      //liczba iteracji pętli
     int i, j;
-    std::vector <int> temp;                          //do sortowania
+
+    std::vector <int> temp;             //do sortowania
     int curr_colors, next_colors;       //najlepsza obecna l. kolorow oraz l. kolorow kandydata
     int candidate;
-    bool improvement, incident;                   //czy znaleziono mozliwa poprawe
+    bool improvement, incident;         //czy znaleziono mozliwa poprawe
     /*
     - przydaloby sie zamienic tab_colors na tablice dwuwymiarowa
       klucz = nr wierzcholka, wartosc = kolor
@@ -290,6 +292,7 @@ int Graf::tabu_search() {
         while (!candidates.empty()) {
             candidate = candidates.back();
             candidates.pop_back();
+            incident = false;
 
             //pomijamy wierzcholki incydentne z tymi w tabu lub te ktore juz sa w tabu
             //aby uniknac konfliktow
