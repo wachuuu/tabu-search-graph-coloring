@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Graf.hpp"
-#include "TabuSearch.hpp"
+#include "AlgKolorowania.hpp"
 
 int main() {
     std::cout << "Wybierz opcje wpisujac 1 lub 2:" << std::endl; 
@@ -15,10 +15,12 @@ int main() {
         case 1: { //generowanie instancji
             int n, proc;
             std::cout << "Podaj liczbe wierzcholkow i procent zageszczenia grafu <0,100>:" << std::endl;
-            std::cin >> n >> proc;            // n - wierzcholki, proc - gestosc grafu
+            std::cin >> n >> proc;    // n - wierzcholki, proc - gestosc grafu
 
             Graf graf(n, proc);
-            graf.tabu_search();
+            AlgKolorowania algorytm(graf.listy_sasiedztwa);
+            //algorytm.zachlanny(0,{});
+            algorytm.tabu_search();
             break;
         }
         case 2: { //odczyt z pliku
@@ -27,7 +29,9 @@ int main() {
             std::cin >> plik;
 
             Graf graf(plik);
-            graf.tabu_search();
+            AlgKolorowania algorytm(graf.listy_sasiedztwa);
+            //algorytm.zachlanny(0,{});
+            algorytm.tabu_search();
 
             break;
         }

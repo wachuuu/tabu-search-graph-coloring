@@ -7,50 +7,32 @@
 #include <time.h>
 #include <Windows.h>
 #include <vector>
+#include <algorithm>
 
-
-//struktura listy jednokierunkowej
-struct lista {
-    lista* next;
-    int value;
-};
 
 class Graf {
 private:
-bool *visited = NULL;
+int n;      //liczba wierzcholkow
+int m;      //liczba krawedzi
 int proc;   //procent zageszczenia grafu
+bool *visited = NULL;
 
-//dodaj wierzcholek
+//operacje na listach sasiedztwa
 void dodaj(int val1, int val2);
-//sprawdz czy istnieje krawedz
 bool istnieje(int val1, int val2);
-//sortowanie
-lista* sortuj_pom(lista* a, lista* b);
-void sortuj(lista** li);
-//DFS
 void DFS(int v);
-//sprawdzanie spojnosci grafu
-void sprawdz_spojnosc();
-//zapisywanie instancji do pliku
+void sprawdz_spojnosc(bool debug=false);
 void zapisz_instancje(std::string plik);
 
 public:
-int n;              //liczba wierzcholkow
-int m;              //liczba krawedzi
-std::vector<std::vector<int>> tab_colors;    //kolory wiercholkow grafu
 //struktura danych do przechowywania grafu
-lista **listy_sasiedztwa;
+std::vector<std::vector<int>> listy_sasiedztwa;
 
-Graf();
 //konstruktor generujacy instancje
-Graf(int n, int proc);
+Graf(int n, int proc, bool debug=false);
 //konstruktor wczytujacy instancje
-Graf(std::string plik);
+Graf(std::string plik, bool debug=false);
 ~Graf();
 
-//algorytm zachlanny kolorowanie grafu
-int koloruj_graf(int start_v, std::vector<int> tabu);
-
-int tabu_search();
 };
 #endif
