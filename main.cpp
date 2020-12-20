@@ -21,6 +21,13 @@ int main() {
             AlgKolorowania algorytm(graf.listy_sasiedztwa);
             //algorytm.zachlanny(0,{});
             algorytm.tabu_search();
+
+            /*tryb debug poprzez wpisanie ',true' na koncu polecenia
+                -algorytm.tabu_search(true);
+                -algorytm.zachlanny(0,{},true);
+                -Graf graf(n, proc, true);
+                -Graf graf(plik,true);*/
+                
             break;
         }
         case 2: { //odczyt z pliku
