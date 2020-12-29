@@ -7,12 +7,12 @@
 #include <time.h>
 #include <Windows.h>
 #include <vector>
+#include <set>
 #include <algorithm>
 
 
 class Graf {
 private:
-int n;      //liczba wierzcholkow
 int m;      //liczba krawedzi
 int proc;   //procent zageszczenia grafu
 bool *visited = NULL;
@@ -27,6 +27,7 @@ void zapisz_instancje(std::string plik);
 public:
 //struktura danych do przechowywania grafu
 std::vector<std::vector<int>> listy_sasiedztwa;
+int n;      //liczba wierzcholkow
 
 //konstruktor generujacy instancje
 Graf(int n, int proc, bool debug=false);

@@ -18,9 +18,9 @@ int main() {
             std::cin >> n >> proc;    // n - wierzcholki, proc - gestosc grafu
 
             Graf graf(n, proc);
-            AlgKolorowania algorytm(graf.listy_sasiedztwa);
+            AlgKolorowania algorytm(graf.n, graf.listy_sasiedztwa);
             //algorytm.zachlanny(0,{});
-            algorytm.tabu_search();
+            algorytm.tabu_search_greedy();
 
             /*tryb debug poprzez wpisanie ',true' na koncu polecenia
                 -algorytm.tabu_search(true);
@@ -36,9 +36,10 @@ int main() {
             std::cin >> plik;
 
             Graf graf(plik);
-            AlgKolorowania algorytm(graf.listy_sasiedztwa);
+            AlgKolorowania algorytm(graf.n, graf.listy_sasiedztwa);
             //algorytm.zachlanny(0,{});
-            algorytm.tabu_search();
+            //algorytm.tabu_search_greedy();
+            algorytm.tabu_search_random();
 
             break;
         }

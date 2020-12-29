@@ -22,11 +22,13 @@ std::vector<int> tabu_list;
 
 public:
 //Pobranie instancji grafu
-AlgKolorowania(std::vector<std::vector<int>> listy, bool debug=false);
+AlgKolorowania(int n, std::vector<std::vector<int>> listy, bool debug=false);
 //Algorytm zachłanny
 int zachlanny(int start_v, std::vector<int> tabu, bool debug=false);
-//Algorytm tabu search
-int tabu_search(bool debug=false);
+//Algorytm tabu search oparty na zachlannym
+int tabu_search_greedy(bool debug=false);
+//Algorytm tabu search oparty na błedach
+int tabu_search_random(bool debug=false);
 };
 
 #endif
