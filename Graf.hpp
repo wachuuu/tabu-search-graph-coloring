@@ -8,7 +8,9 @@
 #include <Windows.h>
 #include <vector>
 #include <set>
+#include <map>
 #include <algorithm>
+#include <utility>
 
 
 class Graf {

@@ -6,6 +6,7 @@ int main() {
     std::cout << "Wybierz opcje wpisujac 1 lub 2:" << std::endl; 
     std::cout << "1. Wygeneruj graf" << std::endl; 
     std::cout << "2. Wczytaj graf z pliku" << std::endl; 
+    std::cout << "3. Tryb testowy" << std::endl; 
     std::cout << "WYBOR: ";
 
     int wybor;
@@ -20,7 +21,8 @@ int main() {
             Graf graf(n, proc);
             AlgKolorowania algorytm(graf.n, graf.listy_sasiedztwa);
             //algorytm.zachlanny(0,{});
-            algorytm.tabu_search_greedy();
+            //algorytm.tabu_search_greedy();
+            algorytm.tabu_search_random(true);
 
             /*tryb debug poprzez wpisanie ',true' na koncu polecenia
                 -algorytm.tabu_search(true);
@@ -34,6 +36,17 @@ int main() {
             std::string plik;
             std::cout << "Podaj nazwe pliku do odczytu: ";
             std::cin >> plik;
+
+            Graf graf(plik);
+            AlgKolorowania algorytm(graf.n, graf.listy_sasiedztwa);
+            //algorytm.zachlanny(0,{});
+            //algorytm.tabu_search_greedy();
+            algorytm.tabu_search_random();
+
+            break;
+        }
+        case 3: { //testy
+            std::string plik = "queen6.txt";
 
             Graf graf(plik);
             AlgKolorowania algorytm(graf.n, graf.listy_sasiedztwa);

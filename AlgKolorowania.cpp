@@ -187,19 +187,23 @@ int AlgKolorowania::tabu_search_greedy(bool debug /*=false*/) {
 
 int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
     srand(time(NULL));
-    int ITER = 7000;              //liczba iteracji algorytmu
-    int tabu_length = 15;       //dlugosc listy tabu
-    int reps = 500;              //dlugosc listy sasiednich rozwiazan
-    int max_colors = 7;         //gorna granica kolorowania
+    int ITER = 12000;              //liczba iteracji algorytmu
+    int tabu_length = 7;         //dlugosc listy tabu
+    int reps = 500;               //dlugosc listy sasiednich rozwiazan
+    int max_colors = 7;           //gorna granica kolorowania
 
     int conflicts, new_conflicts; //liczba konfliktow
     int candidate; //wybrany kandydat
+
+    int debil=0;
 
     std::vector <int> tabu_list;        //lista tabu
     std::set <int> candidates_set;      //kandydaci bez powtorzen
     std::vector <int> candidates;       //kandydaci
     std::vector <int> tab_colors;       //obecne pokolorowanie grafu
     std::vector <int> cand_tab_colors;  //rozwiazanie sasiada
+    std::map <int, int> aspiration_lvl; //kryterium aspiracji
+    std::vector <std::pair<int, int>> wypisane;         //pomoc przy wypisywaniu trybu debug
 
     /* generowanie rozw poczatkowego */
     for (int i=0; i<n; i++) tab_colors.push_back(rand()%(max_colors));
@@ -214,16 +218,25 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
         conflicts = 0;
 
         /*liczba konfliktow*/
+        if(debug) wypisane.clear();
         for(int i=0; i<n; i++) {
             for(auto v: listy_sasiedztwa[i]) {
                 if(tab_colors[i] == tab_colors[v]) {
                     candidates_set.insert(v);
                     conflicts++;
-                    if(debug) std::cout << "konflikt: " << i << " " << v << " - kolor " << tab_colors[i] << std::endl;
+                    if(debug) {
+                        wypisane.push_back(std::make_pair(v, i));
+                        if(std::find(wypisane.begin(), wypisane.end(), std::make_pair(i, v)) == wypisane.end())
+                        std::cout << "konflikt: " << i << " " << v << " - kolor " << tab_colors[i] << std::endl;
+                    }
                 }
             }
         }
+        conflicts = conflicts/2;
         std::cout << "liczba konfliktow: " << conflicts << std::endl;
+        debil++;
+        if (conflicts == 0) break;  //rozw bezkonfliktowe pokolorowalismy na k kolorow
+
         if(debug) {
             std::cout << "kandydaci";
             for(auto x: candidates_set) std::cout << " " << x;
@@ -233,7 +246,6 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
         candidates.clear();
         std::copy(candidates_set.begin(), candidates_set.end(), std::back_inserter(candidates));
 
-        if (conflicts == 0) break;  //rozw bezkonfliktowe pokolorowalismy na k kolorow
 
         /*generujemy x rozwiazan sasiadow*/
         for(int i=0; i < candidates.size(); i++) {
@@ -243,7 +255,7 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
             cand_tab_colors = tab_colors;
             cand_tab_colors[candidate] = rand()%(max_colors-1);
             //jezeli wybralismy taki sam kolor <0, k-1> to obieramy k-ty kolor
-            if (cand_tab_colors[candidate] == tab_colors[candidate]) cand_tab_colors[candidate] = max_colors;
+            if (cand_tab_colors[candidate] == tab_colors[candidate]) cand_tab_colors[candidate] = max_colors-1;
             
             if(debug) std::cout << "kandydat " << candidate << " - zmiana koloru " << tab_colors[candidate]
                 << " -> " << cand_tab_colors[candidate] << std::endl;
@@ -255,25 +267,61 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
                     if(cand_tab_colors[i] == cand_tab_colors[v]) new_conflicts++;
                 }
             }
+            new_conflicts = new_conflicts/2;
             if(debug) std::cout << "liczba konfliktow sasiada: " << new_conflicts << std::endl;            
             
             if(new_conflicts < conflicts) { //znaleziono lepsze rozwiazanie
                 bool in_tabu = false;
-                //tu dodaj poziom aspiracji
-                /*jezeli dany wierzcholek jest w tabu nie ruszamy go*/
-                for(auto x: tabu_list) if(x==candidate) in_tabu = true;
-                //jezeli kandydat w tabu szukaj nastepnego rozw w prz. przyp. zakoncz przeszukiwanie
-                if(in_tabu) {
-                    if(debug) std::cout << "niedozwolone, wierzcholek w tabu" << std::endl;
-                    continue;
+
+                //jezeli jeszcze nie ustalono A(f(s)) ustaw je na f(s)-1
+                if(aspiration_lvl.find(conflicts) == aspiration_lvl.end()) {
+                    if(debug) std::cout << "Ustalam domyslne kryt. aspiracji liczbie: " 
+                        << conflicts << " na " << conflicts-1 <<std::endl;
+                    aspiration_lvl.insert({conflicts, conflicts-1});
                 }
-                else {
+                //kryt aspiracji: jezeli f(s') <= A(f(s)) to ==> A(f(s)) = f(s')-1
+                if(new_conflicts <= aspiration_lvl[conflicts]) {
+                    aspiration_lvl[conflicts] = new_conflicts - 1;
+                    if(debug) std::cout <<"Zmiana kryt aspiracji liczby: "<<conflicts<<" na "<<new_conflicts-1<<std::endl;
+                    //sprawdzamy czy wierzcholek jest w tabu, jezeli tak - usuwamy go; konczymy przeszukiwanie
+                    for(auto x: tabu_list) {
+                        if(x == candidate) {
+                            tabu_list.erase(std::remove(tabu_list.begin(),tabu_list.end(), candidate), tabu_list.end());
+                            if(debug) std::cout << "Element " << x << " usuniety z tabu (kr. aspiracji)" << std::endl;
+                            break;
+                        }
+                    }
                     if(debug) {
-                    std::cout << "nowe rozwiazanie ";
-                    for(auto x: cand_tab_colors) std::cout << " " << x;
-                    std::cout << std::endl;
+                        std::cout << std::endl;
+                        std::cout << "nowe rozwiazanie ";
+                        for(auto x: cand_tab_colors) std::cout << " " << x;
+                        std::cout << std::endl;
                     }
                     break;
+                }
+                //nowe rozw nie spelnia kryterium aspiracji, tabu zostaje zachowane
+                else { 
+                    //sprawdzamy czy wierzcholek jest w tabu, jezeli tak - omijamy go i szukamy dalej
+                    for(auto x: tabu_list) {
+                        if(x == candidate) {
+                            in_tabu = true;
+                            break;
+                        }
+                    }
+                    //jezeli kandydat w tabu szukaj nastepnego rozw w prz. przyp. zakoncz przeszukiwanie
+                    if(in_tabu) {
+                        if(debug) std::cout << "niedozwolone, wierzcholek w tabu" << std::endl;
+                        continue;
+                    }
+                    else {
+                        if(debug) {
+                        std::cout << std::endl;
+                        std::cout << "nowe rozwiazanie ";
+                        for(auto x: cand_tab_colors) std::cout << " " << x;
+                        std::cout << std::endl;
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -290,26 +338,24 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
         tab_colors = cand_tab_colors;
     ITER--;
     }
+
     std::cout << "ROZW KONCOWE" << std::endl;
     std::cout << std::endl;
     for (int i=0; i<n; i++) std::cout << " " << tab_colors[i];
     std::cout << std::endl;
+
+    wypisane.clear();
     for(int i=0; i<n; i++) {
-    for(auto v: listy_sasiedztwa[i]) {
-        if(tab_colors[i] == tab_colors[v]) {
-            std::cout << "konflikt: " << i << " " << v << " - kolor " << tab_colors[i] << std::endl;
+        for(auto v: listy_sasiedztwa[i]) {
+            if(tab_colors[i] == tab_colors[v]) {
+                wypisane.push_back(std::make_pair(v, i));
+                if(std::find(wypisane.begin(), wypisane.end(), std::make_pair(i, v)) == wypisane.end())
+                std::cout << "konflikt: " << i << " " << v << " - kolor " << tab_colors[i] << std::endl;
+            }
         }
     }
-}
+
+    std::cout << "przeszukani sasiedzi " << debil << std::endl;
 
     return 0;
 }
-
-/* 
-TO DO LIST
--sprawdzanie czy cos isnieje w tabu list, eliminacja powtorzen po wyczerpaniu reps
--wyeliminowac
-    konflikt: 4 7 - kolor 1
-    konflikt: 7 4 - kolor 1
-
-*/
