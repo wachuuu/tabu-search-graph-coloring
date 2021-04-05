@@ -1,3 +1,9 @@
+/*
+- Klasa przechowujaca graf w strukturze list sasiedztwa
+- Graf jest wczytywany do struktury poprzez plik tekstowy
+  lub generowany losowo jako graf spojny (zapisywany do pliku)
+*/
+
 #ifndef Graf_hpp
 #define Graf_hpp
 
@@ -36,6 +42,5 @@ Graf(int n, int proc, bool debug=false);
 //konstruktor wczytujacy instancje
 Graf(std::string plik, bool debug=false);
 ~Graf();
-
 };
 #endif

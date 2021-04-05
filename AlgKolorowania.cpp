@@ -1,4 +1,5 @@
 #include "AlgKolorowania.hpp"
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 
 AlgKolorowania::AlgKolorowania(int n, std::vector<std::vector<int>> listy, bool debug /*=false*/) {
     for(std::vector<int>::size_type i = 0; i != listy.size(); i++) {
@@ -24,7 +25,7 @@ bool AlgKolorowania::istnieje(int val1, int val2) {
     else return false;
 }
 
-int AlgKolorowania::zachlanny(int start_v, std::vector<int> tabu, bool debug /*=false*/) {
+int AlgKolorowania::zachlanny(int start_v /*=0*/, std::vector<int> tabu /*={}*/, bool debug /*=false*/) {
     //alokujemy potrzebne struktury
     bool* C  = new bool[n];  
     int i, v, max = 0;
@@ -76,7 +77,7 @@ int AlgKolorowania::tabu_search_greedy(bool debug /*=false*/) {
     //alokacja potrzebnych struktur
     std::vector <int> tabu_list;        // wierzcholki zapisane na sztywno z kolorem 1
     std::vector <int> candidates;       //kandydaci na nastepne wierzcholki do poprawy
-    int ITER = 100;                      //liczba iteracji pętli
+    int ITER = 100;                     //liczba iteracji pętli
     int i, j;
 
     std::vector <int> temp;             //do sortowania
@@ -159,20 +160,6 @@ int AlgKolorowania::tabu_search_greedy(bool debug /*=false*/) {
 
         //czy znaleziono lepsze rozwiazanie? jesli nie - otrzymalismy nasze optimum
         if (!improvement) break;
-
-            /*
-            TO DO
-            V 1. posortuj wierzcholki po kolorach i zapisz je w kolejce candidates
-            V 2. wybierz kandydata i pokoloruj zachlannie ustawiajac kolor kandydata na 1
-            3. jezeli ilosc kolorow sie zmiejszyla zapisz kandydata z kolorem 1 w tabu_list
-                - ponownie posortuj nowe pokolorowanie grafu i zaktualizuj liste kandydatow
-                - w nastepnych krokach uwzgledniaj tabu_list przy kolorowaniu zachlannym
-                - w nastepnych krokach przy doborze kandydata sprawdz czy nie jest incydentny z 
-                  ktoryms wierzcholkiem w tabu_list, jezeli nie -> wroc do kroku 2.
-            4. jezeli ilosc kolorow sie nie zmniejszyla usuwamy kandydata z kolejki i testujemy kolejnego
-            5. w przypadku gdy kolejka zrobi sie pusta - nie ma wiecej mozliwosci obecne pokolorowanie jest 
-            najoptymalniejsze dla tego algorytmu; zakoncz program
-            */
         
         ITER--;
     }
@@ -187,15 +174,18 @@ int AlgKolorowania::tabu_search_greedy(bool debug /*=false*/) {
 
 int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
     srand(time(NULL));
-    int ITER = 12000;              //liczba iteracji algorytmu
-    int tabu_length = 7;         //dlugosc listy tabu
-    int reps = 500;               //dlugosc listy sasiednich rozwiazan
+    /*-------------------------------*/
+    /*Ustawienie parametrow metaheurystyki*/
+
+    int ITER = 5000;              //liczba iteracji algorytmu
+    int tabu_length = 4;          //dlugosc listy tabu
+    int reps = 700;               //dlugosc listy sasiednich rozwiazan
     int max_colors = 7;           //gorna granica kolorowania
+    /*-------------------------------*/
 
     int conflicts, new_conflicts; //liczba konfliktow
-    int candidate; //wybrany kandydat
-
-    int debil=0;
+    int candidate;  //wybrany kandydat
+    int rozw = 0;     //liczba rozpatrzonych rozwiazan
 
     std::vector <int> tabu_list;        //lista tabu
     std::set <int> candidates_set;      //kandydaci bez powtorzen
@@ -232,10 +222,11 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
                 }
             }
         }
-        conflicts = conflicts/2;
+        conflicts = conflicts/2;    //konflikty v1-v2 i v2-v1 kondensujemy do v1-v2
         std::cout << "liczba konfliktow: " << conflicts << std::endl;
-        debil++;
+
         if (conflicts == 0) break;  //rozw bezkonfliktowe pokolorowalismy na k kolorow
+        rozw++;
 
         if(debug) {
             std::cout << "kandydaci";
@@ -246,9 +237,8 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
         candidates.clear();
         std::copy(candidates_set.begin(), candidates_set.end(), std::back_inserter(candidates));
 
-
         /*generujemy x rozwiazan sasiadow*/
-        for(int i=0; i < candidates.size(); i++) {
+        for(int i=0; i < reps; i++) {
             //wybieramy losowo kandydata i zmieniamy mu kolor
             candidate = candidates[rand()%candidates.size()];
             cand_tab_colors.clear();
@@ -273,6 +263,7 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
             if(new_conflicts < conflicts) { //znaleziono lepsze rozwiazanie
                 bool in_tabu = false;
 
+                /*aktualizacja kryterium aspiracji*/
                 //jezeli jeszcze nie ustalono A(f(s)) ustaw je na f(s)-1
                 if(aspiration_lvl.find(conflicts) == aspiration_lvl.end()) {
                     if(debug) std::cout << "Ustalam domyslne kryt. aspiracji liczbie: " 
@@ -335,7 +326,9 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
             for(auto x: tabu_list) std::cout << " " << x;
             std::cout << std::endl;
         }
+        //aktualizacja pokolorowania
         tab_colors = cand_tab_colors;
+
     ITER--;
     }
 
@@ -344,18 +337,20 @@ int AlgKolorowania::tabu_search_random(bool debug /*=false*/) {
     for (int i=0; i<n; i++) std::cout << " " << tab_colors[i];
     std::cout << std::endl;
 
+    /*kontrola pokolorowania*/
     wypisane.clear();
     for(int i=0; i<n; i++) {
         for(auto v: listy_sasiedztwa[i]) {
             if(tab_colors[i] == tab_colors[v]) {
                 wypisane.push_back(std::make_pair(v, i));
                 if(std::find(wypisane.begin(), wypisane.end(), std::make_pair(i, v)) == wypisane.end())
+                //jezeli algorytm pokolorowal blednie wypisz konflikty w rozwiazaniu
                 std::cout << "konflikt: " << i << " " << v << " - kolor " << tab_colors[i] << std::endl;
             }
         }
     }
 
-    std::cout << "przeszukani sasiedzi " << debil << std::endl;
+    std::cout << "przeszukani sasiedzi: " << rozw << std::endl;
 
     return 0;
 }

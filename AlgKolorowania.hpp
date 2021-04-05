@@ -13,10 +13,10 @@ int n;  //liczba wierzcholkow
 //metody pomocnicze
 bool istnieje(int val1, int val2);
 
-/*zachlanny*/
+/*algorytm zachlanny*/
 //kolory wierzcholkow grafu
 std::vector<std::vector<int>> tab_colors;
-/*tabusearch*/
+/*metaheurystyka tabusearch*/
 //lista tabu
 std::vector<int> tabu_list; 
 
@@ -24,10 +24,10 @@ public:
 //Pobranie instancji grafu
 AlgKolorowania(int n, std::vector<std::vector<int>> listy, bool debug=false);
 //Algorytm zachłanny
-int zachlanny(int start_v, std::vector<int> tabu, bool debug=false);
-//Algorytm tabu search oparty na zachlannym
+int zachlanny(int start_v=0, std::vector<int> tabu={}, bool debug=false);
+//Algorytm tabu search oparty na algorytmie zachlannym
 int tabu_search_greedy(bool debug=false);
-//Algorytm tabu search oparty na błedach
+//Algorytm tabu search oparty dopuszczajacy konflikty
 int tabu_search_random(bool debug=false);
 };
 
